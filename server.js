@@ -18,7 +18,8 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/appointments', require('./routes/appointments')); 
+app.use('/api/appointments', require('./routes/appointments'));
+app.use('/api/records', require('./routes/records'));
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
