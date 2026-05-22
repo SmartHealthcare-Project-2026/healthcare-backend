@@ -35,5 +35,33 @@ router.get('/patient/:patientId', async (req, res) => {
         res.status(500).send("Server error fetching medical history.");
     }
 });
+// @route   GET api/records/dashboard/:patientId
+// @desc    Get complete patient dashboard (Profile, Appointments, and Records)
+router.get('/dashboard/:patientId', async (req, res) => {
+    try {
+        const Appointment = require('../models/Appointment');
+        const User = require('../models/User');
 
+        // Run all three database lookups at the exact same time!
+        const [patient, appointments, records] = await Promise.all([
+            User.findById(req.params.patientId).select('-password'), // Hide the password security token
+            Appointment.find({ patientId: req.params.patientId }).sort({ appointmentDate: 1 }),
+            Record.find({ patientId: req.params.patientId }).sort({ dateRecorded: -1 })
+        ]);
+
+        if (!patient) {
+            return res.status(404).json({ message: "Patient profile not found." });
+        }
+
+        // Send everything back in one single, clean package
+        res.json({
+            patient,
+            appointments,
+            records
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error compiling dashboard data.");
+    }
+});
 module.exports = router;
